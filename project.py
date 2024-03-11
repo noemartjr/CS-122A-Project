@@ -1,4 +1,5 @@
 import sys
+from common import *
 
 # map a string to its function
 FUNC_MAP = {
@@ -19,14 +20,25 @@ FUNC_MAP = {
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Missing function name")
+        if db_connection.is_connected():
+            cursor.close()
+            db_connection.close()
         exit(-1)
 
     func_name = sys.argv[1]
 
     if func_name not in FUNC_MAP.keys():
         print("Invalid function name provided")
+        if db_connection.is_connected():
+            cursor.close()
+            db_connection.close()
         exit(-1)
 
     func = FUNC_MAP[func_name]
     func(*sys.argv[2:])
+
+    if db_connection.is_connected():
+        cursor.close()
+        db_connection.close()
+
     exit(0)
