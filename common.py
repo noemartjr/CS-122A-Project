@@ -25,10 +25,6 @@ def print_table(table_input: list) -> None:
 
 def delete_student(uci_net_id: str) -> None:
     try:
-        cursor.execute(f"SELECT UCINetID FROM Students WHERE UCINetID = \'{uci_net_id}\';")
-        if len(cursor.fetchall()) == 0:
-            print("Fail")
-            return
         cursor.execute(f"DELETE FROM Users WHERE UCINetID = \'{uci_net_id}\';")
         cursor.execute(f"DELETE FROM Students WHERE UCINetID = \'{uci_net_id}\';")
         db_connection.commit()
