@@ -19,8 +19,6 @@ except mysql.connector.Error as error:
 
 
 # will add functions to be used
-def print_table(table_input: list) -> None:
-    print("\n".join([",".join([str(row_item) for row_item in row]) for row in table_input]))
 
 def import_data(fpath):
     u = 0;
@@ -105,13 +103,25 @@ def import_data(fpath):
 
         print("{}, {}, {}".format(u, m, c))
 
-def insert_student(UCINetID, email, first, middle, last):
+def insert_student(uci_net_id: str, email: str, First: str, Middle: str, Last: str) -> None:
     try:
-        cursor.execute("INSERT INTO students(UCINetID, email, first, middle, last)VALUES(?, ?, ?, ?, ?)",(UCINetID, email, first, middle, last))
+        # insert to user table first
+        query = "INSERT INTO users VALUES ('%s', '%s', '%s', '%s');" % (uci_net_id, First, Middle, Last)
+        cursor.execute(query)
+
+        # insert to email table
+        query2 = "INSERT INTO userEmail VALUES ('%s', '%s');" % (uci_net_id, email)
+        cursor.execute(query2)
+
+        # insert to userID to student table
+        query3 = "INSERT INTO students VALUES ('%s');" % (uci_net_id)
+        cursor.execute(query3)
+
         db_connection.commit()
         print("Success")
-    except mysql.Error as e:
-        print("Fail")
+    except mysql.connector.Error as error:
+        print(f"Failed to execute SQL script insert_student: {error}")
+
 
 def add_email(UCINetID, email):
     try:
@@ -133,8 +143,8 @@ def add_email(UCINetID, email):
 
 def delete_student(uci_net_id: str) -> None:
     try:
-        cursor.execute(f"DELETE FROM Users WHERE UCINetID = \'{uci_net_id}\';")
-        cursor.execute(f"DELETE FROM Students WHERE UCINetID = \'{uci_net_id}\';")
+        cursor.execute(f"DELETE FROM users WHERE UCINetID = \'{uci_net_id}\';")
+        cursor.execute(f"DELETE FROM students WHERE UCINetID = \'{uci_net_id}\';")
         db_connection.commit()
         print("Success")
     except mysql.connector.Error as error:
@@ -144,7 +154,7 @@ def delete_student(uci_net_id: str) -> None:
 def insert_machine(machine_id: int, *remainder_args) -> None:
     try:
         remainder_str = ",".join([f"\'{arg}\'" if arg != "NULL" else "NULL" for arg in remainder_args])
-        cursor.execute(f"INSERT INTO Machines VALUES ({machine_id},{remainder_str});")
+        cursor.execute(f"INSERT INTO machines VALUES ({machine_id},{remainder_str});")
         db_connection.commit()
         print("Success")
     except mysql.connector.Error as error:
@@ -154,24 +164,50 @@ def insert_machine(machine_id: int, *remainder_args) -> None:
 def insert_use_record(proj_id: int, uci_net_id: str, machine_id: int, *remainder_args) -> None:
     try:
         remainder_str = ",".join([f"\'{arg}\'" if arg != "NULL" else "NULL" for arg in remainder_args])
-        cursor.execute(f"INSERT INTO StudentUseMachinesInProject VALUES ({proj_id},\'{uci_net_id}\',{machine_id},{remainder_str})")
+        cursor.execute(f"INSERT INTO studentUse VALUES ({proj_id},\'{uci_net_id}\',{machine_id},{remainder_str})")
         db_connection.commit()
         print("Success")
     except mysql.connector.Error as error:
         print("Fail")
 
 
+def popular_course(N: int) -> None:
+    try:
+        cursor.execute(f"SELECT c.CourseID, c.Title, COUNT(*) AS studentCount \
+                FROM courses c \
+               JOIN projects p ON c.CourseID = p.CourseID \
+               JOIN studentUse SU ON p.ProjectID = SU.ProjectID \
+               GROUP BY c.CourseID, c.Title \
+               ORDER BY studentCount DESC, c.CourseID DESC \
+               LIMIT {N};")
+
+        print_table(cursor)
+
+        print("Success")
+    except mysql.connector.Error as error:
+        print(f"Failed to execute SQL script popular_course: {error}")
 
 def emails_of_admin( machine_id: int) -> None:
     try:
         cursor.execute(f"SELECT U.UCINetID, U.FirstName, U.MiddleName, U.LastName, UE.Email \
-                        FROM Administrators A \
-                        JOIN Users U ON A.UCINetID = U.UCINetID \
-                        JOIN UserEmail UE ON A.UCINetID = UE.UCINetID \
-                        JOIN AdministratorManageMachines AMM ON A.UCINetID = AMM.AdministratorUCINetID \
+                        FROM administrators A \
+                        JOIN users U ON A.UCINetID = U.UCINetID \
+                        JOIN userEmail UE ON A.UCINetID = UE.UCINetID \
+                        JOIN adminManageMachines AMM ON A.UCINetID = AMM.AdminUCINetID \
                         WHERE AMM.MachineID = \'{machine_id}\' \
                         ORDER BY U.UCINetID ASC;")
-        db_connection.commit()
+        print_table(cursor)
         print("Success")
     except mysql.connector.Error as error:
-        print("Fail")
+        print(f"Failed to execute SQL script emails_of_admin: {error}")
+
+
+def print_table(cursor):
+    rows = cursor.fetchall()
+    if rows:
+        column_names = [description[0] for description in cursor.description]
+        print("\t".join(column_names))  # Print column headers
+        for row in rows:
+            print("\t".join(str(cell) for cell in row))
+    else:
+        print("No results found")
