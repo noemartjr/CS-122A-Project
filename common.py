@@ -22,11 +22,6 @@ except mysql.connector.Error as error:
 def print_table(table_input: list) -> None:
     print("\n".join([",".join([str(row_item) for row_item in row]) for row in table_input]))
 
-import mysql.connector 
-
-db_connection = mysql.connector.connect(user=Constants.USER, password=Constants.PASSWORD, database=Constants.DATABASE)
-cursor = db_connection.cursor()
-
 def import_data(fpath, db_connection):
     cursor = db_connection.cursor()
     u = 0;
