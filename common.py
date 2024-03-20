@@ -105,6 +105,15 @@ def import_data(fpath):
 
         print("{}, {}, {}".format(u, m, c))
 
+def insert_student(UCINetID, email, first, middle, last):
+    try:
+        cursor.execute('''INSERT INTO students(UCINetID, email, first, middle, last)
+                      VALUES(?, ?, ?, ?, ?)''',(UCINetID, email, first, middle, last))
+        db_connection.commit()
+        print("Success")
+    except mysql.Error as e:
+        print("Fail")
+
 def delete_student(uci_net_id: str) -> None:
     try:
         cursor.execute(f"DELETE FROM Users WHERE UCINetID = \'{uci_net_id}\';")
