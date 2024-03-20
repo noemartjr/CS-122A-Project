@@ -12,7 +12,7 @@ FUNC_MAP = {
     "updateCourse": lambda *args, **kwargs: print(f"Missing updateCourse function"),
     "listCourse": lambda *args, **kwargs: print(f"Missing listCourse function"),
     "popularCourse": lambda *args, **kwargs: print(f"Missing popularCourse function"),
-    "adminEmails": lambda *args, **kwargs: print(f"Missing adminEmails function"),
+    "adminEmails": emails_of_admin,
     "activeStudent": lambda *args, **kwargs: print(f"Missing activeStudent function"),
     "machineUsage": lambda *args, **kwargs: print(f"Missing machineUsage function")
 }

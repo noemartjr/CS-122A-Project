@@ -51,3 +51,19 @@ def insert_use_record(proj_id: int, uci_net_id: str, machine_id: int, *remainder
         print("Success")
     except mysql.connector.Error as error:
         print("Fail")
+
+
+
+def emails_of_admin( machine_id: int) -> None:
+    try:
+        cursor.execute(f"SELECT U.UCINetID, U.FirstName, U.MiddleName, U.LastName, UE.Email \
+                        FROM Administrators A \
+                        JOIN Users U ON A.UCINetID = U.UCINetID \
+                        JOIN UserEmail UE ON A.UCINetID = UE.UCINetID \
+                        JOIN AdministratorManageMachines AMM ON A.UCINetID = AMM.AdministratorUCINetID \
+                        WHERE AMM.MachineID = \'{machine_id}\' \
+                        ORDER BY U.UCINetID ASC;")
+        db_connection.commit()
+        print("Success")
+    except mysql.connector.Error as error:
+        print("Fail")
