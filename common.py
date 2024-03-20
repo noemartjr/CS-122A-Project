@@ -40,7 +40,7 @@ def import_data(fpath):
     cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
 
 
-    TABLES = init_tables()
+    TABLES = print_table()
 
     for name in TABLES:
         desc = TABLES[name]
