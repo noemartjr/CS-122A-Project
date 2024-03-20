@@ -3,7 +3,7 @@ from common import *
 
 # map a string to its function
 FUNC_MAP = {
-    "import": lambda *args, **kwargs: print(f"Missing import function"),
+    "import": import_data,
     "insertStudent": lambda *args, **kwargs: print(f"Missing insertStudent function"),
     "addEmail": lambda *args, **kwargs: print(f"Missing addEmail function"),
     "deleteStudent": delete_student,
