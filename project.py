@@ -4,8 +4,8 @@ from common import *
 # map a string to its function
 FUNC_MAP = {
     "import": import_data,
-    "insertStudent": lambda *args, **kwargs: print(f"Missing insertStudent function"),
-    "addEmail": lambda *args, **kwargs: print(f"Missing addEmail function"),
+    "insertStudent": insert_student,
+    "addEmail": add_email,
     "deleteStudent": delete_student,
     "insertMachine": insert_machine,
     "insertUse": insert_use_record,
