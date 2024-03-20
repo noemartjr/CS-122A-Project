@@ -23,7 +23,6 @@ def print_table(table_input: list) -> None:
     print("\n".join([",".join([str(row_item) for row_item in row]) for row in table_input]))
 
 def import_data(fpath, db_connection):
-    cursor = db_connection.cursor()
     u = 0;
     m = 0;
     c = 0;
