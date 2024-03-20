@@ -170,44 +170,53 @@ def insert_use_record(proj_id: int, uci_net_id: str, machine_id: int, *remainder
     except mysql.connector.Error as error:
         print("Fail")
 
+def update_course(course_id: int, title: str) -> None:
+    try:
+        query = ("UPDATE courses \
+                SET Title = '%s' \
+                WHERE CourseID = %s;"
+                 % (title, course_id))
+        cursor.execute(query)
+
+        db_connection.commit()
+        print("Success")
+    except mysql.connector.Error as error:
+        print(f"Fail")
+def course_attended(uci_net_id: str) -> None:
+    cursor.execute(f"SELECT DISTINCT c.CourseID, c.Title, c.Quarter \
+            FROM studentUse su \
+            JOIN projects p ON su.ProjectID = p.ProjectID \
+            JOIN courses c ON p.CourseID = c.CourseID \
+            WHERE su.StudentUCINetID = '{uci_net_id}' \
+            ORDER BY c.CourseID ASC;")
+
+    print_table(cursor)
 
 def popular_course(N: int) -> None:
-    try:
-        cursor.execute(f"SELECT c.CourseID, c.Title, COUNT(*) AS studentCount \
-                FROM courses c \
-               JOIN projects p ON c.CourseID = p.CourseID \
-               JOIN studentUse SU ON p.ProjectID = SU.ProjectID \
-               GROUP BY c.CourseID, c.Title \
-               ORDER BY studentCount DESC, c.CourseID DESC \
-               LIMIT {N};")
-
-        print_table(cursor)
-
-        print("Success")
-    except mysql.connector.Error as error:
-        print(f"Failed to execute SQL script popular_course: {error}")
+    cursor.execute(f"SELECT c.CourseID, c.Title, COUNT(*) AS studentCount \
+                    FROM courses c \
+                   JOIN projects p ON c.CourseID = p.CourseID \
+                   JOIN studentUse SU ON p.ProjectID = SU.ProjectID \
+                   GROUP BY c.CourseID, c.Title \
+                   ORDER BY studentCount DESC, c.CourseID DESC \
+                   LIMIT {N};")
+    print_table(cursor)
 
 def emails_of_admin( machine_id: int) -> None:
-    try:
-        cursor.execute(f"SELECT U.UCINetID, U.FirstName, U.MiddleName, U.LastName, UE.Email \
-                        FROM administrators A \
-                        JOIN users U ON A.UCINetID = U.UCINetID \
-                        JOIN userEmail UE ON A.UCINetID = UE.UCINetID \
-                        JOIN adminManageMachines AMM ON A.UCINetID = AMM.AdminUCINetID \
-                        WHERE AMM.MachineID = \'{machine_id}\' \
-                        ORDER BY U.UCINetID ASC;")
-        print_table(cursor)
-        print("Success")
-    except mysql.connector.Error as error:
-        print(f"Failed to execute SQL script emails_of_admin: {error}")
-
+    cursor.execute(f"SELECT U.UCINetID, U.FirstName, U.MiddleName, U.LastName, UE.Email \
+                            FROM administrators A \
+                            JOIN users U ON A.UCINetID = U.UCINetID \
+                            JOIN userEmail UE ON A.UCINetID = UE.UCINetID \
+                            JOIN adminManageMachines AMM ON A.UCINetID = AMM.AdminUCINetID \
+                            WHERE AMM.MachineID = \'{machine_id}\' \
+                            ORDER BY U.UCINetID ASC;")
+    print_table(cursor)
 
 def print_table(cursor):
     rows = cursor.fetchall()
     if rows:
-        column_names = [description[0] for description in cursor.description]
-        print("\t".join(column_names))  # Print column headers
         for row in rows:
-            print("\t".join(str(cell) for cell in row))
+            print(",".join(str(cell) for cell in row))
     else:
         print("No results found")
+

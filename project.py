@@ -9,9 +9,9 @@ FUNC_MAP = {
     "deleteStudent": delete_student,
     "insertMachine": insert_machine,
     "insertUse": insert_use_record,
-    "updateCourse": lambda *args, **kwargs: print(f"Missing updateCourse function"),
-    "listCourse": lambda *args, **kwargs: print(f"Missing listCourse function"),
-    "popularCourse": lambda *args, **kwargs: print(f"Missing popularCourse function"),
+    "updateCourse": update_course,
+    "listCourse": course_attended,
+    "popularCourse": popular_course,
     "adminEmails": emails_of_admin,
     "activeStudent": lambda *args, **kwargs: print(f"Missing activeStudent function"),
     "machineUsage": lambda *args, **kwargs: print(f"Missing machineUsage function")
