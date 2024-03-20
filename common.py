@@ -113,6 +113,24 @@ def insert_student(UCINetID, email, first, middle, last):
     except mysql.Error as e:
         print("Fail")
 
+def add_email(UCINetID, email):
+    try:
+        cursor.execute("SELECT UCINetID FROM students WHERE UCINetID=?", (UCINetID,))
+        user = cursor.fetchone()
+
+        if user:
+            cursor.execute("UPDATE students SET Email=? WHERE UCINetID=?", (email, UCINetID))
+            db_connection.commit()
+            db_connection.close()
+            print("Success")
+        else:
+            print("User with UCINetID '{}' not found.".format(UCINetID))
+            db_connection.close()
+            print("User not found")
+    except mysql.connector.Error as e:
+        print("mysql error:", e)
+        print("Fail")
+
 def delete_student(uci_net_id: str) -> None:
     try:
         cursor.execute(f"DELETE FROM Users WHERE UCINetID = \'{uci_net_id}\';")
