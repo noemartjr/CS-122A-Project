@@ -2,12 +2,14 @@ import mysql.connector
 import os
 import csv
 
+
 class Constants:
     USER = "test"
 
     PASSWORD = "password"
 
     DATABASE = "cs122a"
+
 
 try:
     db_connection = mysql.connector.connect(user=Constants.USER, password=Constants.PASSWORD,
@@ -18,10 +20,10 @@ except mysql.connector.Error as error:
     print(f"Failed to execute SQL script: {error}")
     exit(-1)
 
-
 # will add functions to be used
 
 sql_file_path = 'cs122a_project.sql'
+
 
 def get_formatted_param(param: str) -> str:
     if param == "NULL":
@@ -30,6 +32,7 @@ def get_formatted_param(param: str) -> str:
         return param
     else:
         return f"'{param}'"
+
 
 def import_data(fpath: str) -> None:
     try:
@@ -49,14 +52,14 @@ def import_data(fpath: str) -> None:
 
         # (file name, table name)
         tnames = [('users', 'users'),
-                 ('emails', 'userEmail'),
-                 ('admins', 'administrators'),
-                 ('students', 'students'),
-                 ('machines', 'machines'),
-                 ('courses', 'courses'),
-                 ('projects', 'projects'),
-                 ('manage', 'adminManageMachines'),
-                 ('use', 'studentUse')]
+                  ('emails', 'userEmail'),
+                  ('admins', 'administrators'),
+                  ('students', 'students'),
+                  ('machines', 'machines'),
+                  ('courses', 'courses'),
+                  ('projects', 'projects'),
+                  ('manage', 'adminManageMachines'),
+                  ('use', 'studentUse')]
 
         for filename, name in tnames:
             path = os.path.join(fpath, filename + '.csv')
@@ -65,11 +68,11 @@ def import_data(fpath: str) -> None:
                 reader = csv.reader(csvfile)
                 values_list = []
                 for row in reader:
-                    if(name == "users"):
+                    if (name == "users"):
                         u += 1
-                    elif(name == "machines"):
+                    elif (name == "machines"):
                         m += 1
-                    elif(name == "courses"):
+                    elif (name == "courses"):
                         c += 1
 
                     values_list.append("(" + ",".join([get_formatted_param(item) for item in row]) + ")")
@@ -80,6 +83,7 @@ def import_data(fpath: str) -> None:
         print(f"{u},{m},{c}")
     except mysql.connector.Error as error:
         pass
+
 
 def insert_student(uci_net_id: str, email: str, First: str, Middle: str, Last: str) -> None:
     try:
@@ -110,6 +114,7 @@ def add_email(UCINetID, email):
     except mysql.connector.Error as e:
         print("Fail")
 
+
 def delete_student(uci_net_id: str) -> None:
     try:
         cursor.execute(f"DELETE FROM users WHERE UCINetID = {uci_net_id};")
@@ -139,6 +144,7 @@ def insert_use_record(*remainder_args) -> None:
     except mysql.connector.Error as error:
         print("Fail")
 
+
 def update_course(course_id: int, title: str) -> None:
     try:
         query = ("UPDATE courses \
@@ -151,6 +157,7 @@ def update_course(course_id: int, title: str) -> None:
         print("Success")
     except mysql.connector.Error as error:
         print(f"Fail")
+
 
 def course_attended(uci_net_id: str) -> None:
     try:
@@ -165,6 +172,7 @@ def course_attended(uci_net_id: str) -> None:
     except mysql.connector.Error as error:
         pass
 
+
 def popular_course(N: int) -> None:
     try:
         cursor.execute(f"SELECT c.CourseID, c.Title, COUNT(*) AS studentCount \
@@ -178,7 +186,8 @@ def popular_course(N: int) -> None:
     except mysql.connector.Error as error:
         pass
 
-def emails_of_admin( machine_id: int) -> None:
+
+def emails_of_admin(machine_id: int) -> None:
     try:
         cursor.execute(f"SELECT U.UCINetID, U.FirstName, U.MiddleName, U.LastName, UE.Email \
                                 FROM administrators A \
@@ -190,6 +199,7 @@ def emails_of_admin( machine_id: int) -> None:
         print_table()
     except mysql.connector.Error as error:
         pass
+
 
 def activeStudent(machine_id: int, numTimes: int, startDate: str, endDate: str) -> None:
     try:
@@ -203,7 +213,8 @@ def activeStudent(machine_id: int, numTimes: int, startDate: str, endDate: str) 
         print_table()
     except mysql.connector.Error as error:
         pass
-    
+
+
 def machineUsage(courseId: int) -> None:
     try:
         cursor.execute(f"SELECT M.MachineID, M.Hostname, M.IPAddress, \
@@ -218,9 +229,9 @@ def machineUsage(courseId: int) -> None:
     except mysql.connector.Error as error:
         pass
 
+
 def print_table():
     rows = cursor.fetchall()
     if rows:
         for row in rows:
             print(",".join(str(cell) for cell in row))
-
