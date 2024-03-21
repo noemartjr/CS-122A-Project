@@ -20,6 +20,93 @@ except mysql.connector.Error as error:
 
 
 # will add functions to be used
+schema = {
+    'users': '''
+        CREATE TABLE IF NOT EXISTS users(
+            UCINetID VARCHAR(20) PRIMARY KEY NOT NULL,
+            FirstName VARCHAR(50),
+            MiddleName VARCHAR(50),
+            LastName VARCHAR(50)
+        )
+    ''',
+
+    'machines':'''
+        CREATE TABLE IF NOT EXISTS machines(
+            MachineID INT PRIMARY KEY NOT NULL,
+            Hostname VARCHAR(255),
+            IPAddress VARCHAR(15),
+            OperationalStatus VARCHAR(50),
+            Location VARCHAR(255)
+        )
+    ''',
+    'courses':'''
+        CREATE TABLE IF NOT EXISTS courses(
+            CourseID INT PRIMARY KEY NOT NULL,
+            Title VARCHAR(100),
+            Quarter VARCHAR(20)
+        )
+    ''',
+
+    'emails':'''
+        CREATE TABLE IF NOT EXISTS email (
+            UCINetID VARCHAR(20) NOT NULL,
+            Email VARCHAR(100),
+            PRIMARY KEY (UCINetID, Email),
+            FOREIGN KEY (UCINetID) REFERENCES users (UCINetID)
+            ON DELETE CASCADE
+        )
+    ''',
+
+    'students':'''
+        CREATE TABLE IF NOT EXISTS students (
+           UCINetID VARCHAR(20) PRIMARY KEY NOT NULL,
+           FOREIGN KEY (UCINetID) REFERENCES users(UCINetID)
+             ON DELETE CASCADE
+        )
+    ''',
+
+    'admins':'''
+        CREATE TABLE IF NOT EXISTS administrators (
+           UCINetID VARCHAR(20) PRIMARY KEY NOT NULL,
+           FOREIGN KEY (UCINetID) REFERENCES users(UCINetID)
+             ON DELETE CASCADE
+        )
+    ''',
+
+    'projects':'''
+        CREATE TABLE IF NOT EXISTS projects (
+           ProjectID INT PRIMARY KEY NOT NULL,
+           Name VARCHAR(100),
+           Description TEXT,
+           CourseID INT NOT NULL,
+           FOREIGN KEY (CourseID) REFERENCES courses(CourseID)
+        )
+    ''',
+
+    'use':'''
+        CREATE TABLE IF NOT EXISTS use (
+           ProjectID INT,
+           StudentUCINetID VARCHAR(20),
+           MachineID INT,
+           StartDate DATE,
+           EndDate DATE,
+           PRIMARY KEY (ProjectID, StudentUCINetID, MachineID),
+           FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID),
+           FOREIGN KEY (StudentUCINetID) REFERENCES students(UCINetID),
+           FOREIGN KEY (MachineID) REFERENCES machines(MachineID)
+        )
+    ''',
+
+    'manage':'''
+        CREATE TABLE IF NOT EXISTS manage (
+           AdminUCINetID VARCHAR(20),
+           MachineID INT,
+           PRIMARY KEY (AdminUCINetID, MachineID),
+           FOREIGN KEY (AdminUCINetID) REFERENCES administrators(UCINetID),
+           FOREIGN KEY (MachineID) REFERENCES machines(MachineID)
+        )
+    ''',
+}
 
 def import_data(fpath):
     u = 0;
@@ -45,7 +132,7 @@ def import_data(fpath):
     cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
 
 
-    TABLES = print_table()
+    TABLES = schema()
 
     for name in TABLES:
         desc = TABLES[name]
