@@ -31,53 +31,55 @@ def get_formatted_param(param: str) -> str:
     else:
         return f"'{param}'"
 
-def import_data(fpath: str):
-    fpath = fpath.strip("\'")
-    u = 0
-    m = 0
-    c = 0
+def import_data(fpath: str) -> None:
+    try:
+        fpath = fpath.strip("\'")
+        u = 0
+        m = 0
+        c = 0
 
-    sql_script = open(sql_file_path, 'r').read()
-    # Execute each statement in the SQL file
-    for statement in sql_script.split(';'):
-        # Ignore empty statements (which can occur due to splitting by ';')
-        if statement.strip():
-            print("running: ", statement)
-            cursor.execute(statement)
+        sql_script = open(sql_file_path, 'r').read()
+        # Execute each statement in the SQL file
+        for statement in sql_script.split(';'):
+            # Ignore empty statements (which can occur due to splitting by ';')
+            if statement.strip():
+                cursor.execute(statement)
 
-    db_connection.commit()
+        db_connection.commit()
 
-    # (file name, table name)
-    tnames = [('users', 'users'),
-             ('emails', 'userEmail'),
-             ('admins', 'administrators'),
-             ('students', 'students'),
-             ('machines', 'machines'),
-             ('courses', 'courses'),
-             ('projects', 'projects'),
-             ('manage', 'adminManageMachines'),
-             ('use', 'studentUse')]
+        # (file name, table name)
+        tnames = [('users', 'users'),
+                 ('emails', 'userEmail'),
+                 ('admins', 'administrators'),
+                 ('students', 'students'),
+                 ('machines', 'machines'),
+                 ('courses', 'courses'),
+                 ('projects', 'projects'),
+                 ('manage', 'adminManageMachines'),
+                 ('use', 'studentUse')]
 
-    for filename, name in tnames:
-        path = os.path.join(fpath, filename + '.csv')
+        for filename, name in tnames:
+            path = os.path.join(fpath, filename + '.csv')
 
-        with open(path, 'r') as csvfile:
-            reader = csv.reader(csvfile)
-            values_list = []
-            for row in reader:
-                if(name == "users"):
-                    u += 1
-                elif(name == "machines"):
-                    m += 1
-                elif(name == "courses"):
-                    c += 1
+            with open(path, 'r') as csvfile:
+                reader = csv.reader(csvfile)
+                values_list = []
+                for row in reader:
+                    if(name == "users"):
+                        u += 1
+                    elif(name == "machines"):
+                        m += 1
+                    elif(name == "courses"):
+                        c += 1
 
-                values_list.append("(" + ",".join([get_formatted_param(item) for item in row]) + ")")
+                    values_list.append("(" + ",".join([get_formatted_param(item) for item in row]) + ")")
 
-            cursor.execute(f"INSERT INTO {name} VALUES {','.join(values_list)};")
+                cursor.execute(f"INSERT INTO {name} VALUES {','.join(values_list)};")
 
-    db_connection.commit()
-    print(f"{u},{m},{c}")
+        db_connection.commit()
+        print(f"{u},{m},{c}")
+    except mysql.connector.Error as error:
+        pass
 
 def insert_student(uci_net_id: str, email: str, First: str, Middle: str, Last: str) -> None:
     try:
