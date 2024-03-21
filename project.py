@@ -17,6 +17,14 @@ FUNC_MAP = {
     "machineUsage": machineUsage
 }
 
+def get_formatted_param(param: str) -> str:
+    if param == "NULL":
+        return "NULL"
+    elif param.isdigit():
+        return param
+    else:
+        return f"'{param}'"
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Missing function name")
@@ -35,7 +43,7 @@ if __name__ == "__main__":
         exit(-1)
 
     func = FUNC_MAP[func_name]
-    func(*sys.argv[2:])
+    func(*[get_formatted_param(param) for param in sys.argv[2:]])
 
     if db_connection.is_connected():
         cursor.close()
