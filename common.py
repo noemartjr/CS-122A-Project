@@ -222,7 +222,7 @@ def activeStudent(machine_id: int, numTimes: int, startDate: str, endDate: str) 
                          ORDER BY U.UCINetID ASC;")
         print_table()
     except mysql.connector.Error as error:
-        print(error)
+        pass
 
 
 def machineUsage(courseId: int) -> None:
@@ -231,13 +231,13 @@ def machineUsage(courseId: int) -> None:
                          SUM(CASE WHEN SU.ProjectID IS NOT NULL THEN 1 ELSE 0 END) AS Count \
                          FROM machines M \
                          LEFT JOIN (SELECT * FROM studentUse WHERE ProjectID IN( \
-                                    SELECT ProjectID from Project WHERE CourseID = {courseId})) \
+                                    SELECT ProjectID from projects WHERE CourseID = {courseId})) \
                          AS SU ON SU.MachineID = M.MachineID \
                          GROUP BY M.MachineID, M.Hostname, M.IPAddress \
                          ORDER BY M.MachineID DESC;")
         print_table()
     except mysql.connector.Error as error:
-        print(error)
+        pass
 
 
 def print_table():
