@@ -165,7 +165,7 @@ def insert_use_record(*remainder_args) -> None:
 def update_course(course_id: int, title: str) -> None:
     try:
         query = ("UPDATE courses \
-                SET Title = '%s' \
+                SET Title = %s \
                 WHERE CourseID = %s;"
                  % (title, course_id))
         cursor.execute(query)
