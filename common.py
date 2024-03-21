@@ -25,6 +25,12 @@ def import_data(fpath):
     u = 0;
     m = 0;
     c = 0;
+    a = 0;
+    e = 0;
+    p = 0;
+    s = 0;
+    use = 0;
+    man = 0;
 
     drop = "DROP TABLE IF EXISTS {}"
     insert = "INSERT INTO {table} ()"
@@ -79,6 +85,18 @@ def import_data(fpath):
                     m += 1
                 elif(name == "Course"):
                     c += 1
+                elif(name == "Administrator"):
+                    a += 1
+                elif(name == "email"):
+                    e += 1
+                elif(name == "Project"):
+                    p += 1
+                elif(name == "Student"):
+                    s += 1
+                elif(name == "Uses"):
+                    use += 1;
+                elif(name == "Manage"):
+                    man += 1
 
                 cursor.execute(insert, temp)
 
@@ -97,12 +115,24 @@ def import_data(fpath):
                         m += 1
                     elif(name == "Course"):
                         c += 1
+                    elif(name == "Administrator"):
+                        a += 1
+                    elif(name == "email"):
+                        e += 1
+                    elif(name == "Project"):
+                        p += 1
+                    elif(name == "Student"):
+                        s += 1
+                    elif(name == "Uses"):
+                        use += 1;
+                    elif(name == "Manage"):
+                        man += 1
 
                     cursor.execute(insert, temp)
 
         cursor.close()
 
-        print("{}, {}, {}".format(u, m, c))
+        print("{}, {}, {}, {}, {}, {}, {}, {}, {}".format(u, m, c, a, e, p, s, use, man))
 
 def insert_student(uci_net_id: str, email: str, First: str, Middle: str, Last: str) -> None:
     try:
