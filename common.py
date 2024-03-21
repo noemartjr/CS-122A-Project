@@ -222,7 +222,7 @@ def activeStudent(machine_id: int, numTimes: int, startDate: str, endDate: str) 
                          ORDER BY U.UCINetID ASC;")
         print_table()
     except mysql.connector.Error as error:
-        pass
+        print(error)
 
 
 def machineUsage(courseId: int) -> None:
@@ -237,7 +237,7 @@ def machineUsage(courseId: int) -> None:
                          ORDER BY M.MachineID DESC;")
         print_table()
     except mysql.connector.Error as error:
-        pass
+        print(error)
 
 
 def print_table():
