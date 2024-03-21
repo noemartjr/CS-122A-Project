@@ -1,6 +1,7 @@
 import mysql.connector
 import os
 import csv
+from collections import OrderedDict
 
 
 class Constants:
@@ -196,7 +197,16 @@ def emails_of_admin(machine_id: int) -> None:
                                 JOIN adminManageMachines AMM ON A.UCINetID = AMM.AdminUCINetID \
                                 WHERE AMM.MachineID = {machine_id} \
                                 ORDER BY U.UCINetID ASC;")
-        print_table()
+
+        email_dict = OrderedDict()
+        for row in cursor.fetchall():
+            row_strs = [str(item) if item is not None else "NULL" for item in row]
+            row_key = ",".join(row_strs[:-1])
+            if row_key not in email_dict:
+                email_dict[row_key] = []
+            email_dict[row_key].append(row_strs[-1])
+        print("\n".join([f"{dict_key},{';'.join(email_values)}" for dict_key, email_values in email_dict.items()]))
+
     except mysql.connector.Error as error:
         pass
 
