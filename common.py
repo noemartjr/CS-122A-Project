@@ -176,7 +176,7 @@ def course_attended(uci_net_id: str) -> None:
 
 def popular_course(N: int) -> None:
     try:
-        cursor.execute(f"SELECT c.CourseID, c.Title, COUNT(*) AS studentCount \
+        cursor.execute(f"SELECT c.CourseID, c.Title, COUNT(DISTINCT SU.StudentUCINetID) AS studentCount \
                         FROM courses c \
                        JOIN projects p ON c.CourseID = p.CourseID \
                        JOIN studentUse SU ON p.ProjectID = SU.ProjectID \
@@ -244,4 +244,4 @@ def print_table():
     rows = cursor.fetchall()
     if rows:
         for row in rows:
-            print(",".join(str(cell) for cell in row))
+            print(",".join(str(cell) if cell is not None else "NULL" for cell in row))
