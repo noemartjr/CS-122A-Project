@@ -17,14 +17,6 @@ FUNC_MAP = {
     "machineUsage": machineUsage
 }
 
-def get_formatted_param(param: str) -> str:
-    if param == "NULL":
-        return "NULL"
-    elif param.isdigit():
-        return param
-    else:
-        return f"'{param}'"
-
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Missing function name")

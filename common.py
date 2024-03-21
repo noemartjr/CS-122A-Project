@@ -21,88 +21,63 @@ except mysql.connector.Error as error:
 
 # will add functions to be used
 
-def import_data(fpath):
-    u = 0;
-    m = 0;
-    c = 0;
+sql_file_path = 'cs122a_project.sql'
 
-    drop = "DROP TABLE IF EXISTS {}"
-    insert = "INSERT INTO {table} ()"
+def get_formatted_param(param: str) -> str:
+    if param == "NULL":
+        return "NULL"
+    elif param.isdigit():
+        return param
+    else:
+        return f"'{param}'"
 
-    cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
-    cursor.execute("SHOW TABLES")
+def import_data(fpath: str):
+    fpath = fpath.strip("\'")
+    u = 0
+    m = 0
+    c = 0
 
-    for t in cursor.fetchall():
-        name = t[0]
+    sql_script = open(sql_file_path, 'r').read()
+    # Execute each statement in the SQL file
+    for statement in sql_script.split(';'):
+        # Ignore empty statements (which can occur due to splitting by ';')
+        if statement.strip():
+            print("running: ", statement)
+            cursor.execute(statement)
 
-    cursor.execute(drop.format(name))
-    cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
+    db_connection.commit()
 
-
-    TABLES = print_table()
-
-    for name in TABLES:
-        desc = TABLES[name]
-        cursor.execute(desc)
-
-
-    tnames = [('users', 'User'),
-             ('emails', 'email'),
-             ('admins', 'Administrator'),
-             ('students', 'Student'),
-             ('machines', 'Machine'),
-             ('courses', 'Course'),
-             ('projects', 'Project'),
-             ('manage', 'Manage'),
-             ('use', 'Uses')]
+    # (file name, table name)
+    tnames = [('users', 'users'),
+             ('emails', 'userEmail'),
+             ('admins', 'administrators'),
+             ('students', 'students'),
+             ('machines', 'machines'),
+             ('courses', 'courses'),
+             ('projects', 'projects'),
+             ('manage', 'adminManageMachines'),
+             ('use', 'studentUse')]
 
     for filename, name in tnames:
         path = os.path.join(fpath, filename + '.csv')
 
-        with open(path, newline='') as csvfile:
+        with open(path, 'r') as csvfile:
             reader = csv.reader(csvfile)
-            first = next(reader)
-            col = len(first)
-
-            insert = format(name, col)
-            temp = []
-
-            for val in first:
-                if(val == 'NULL'):
-                    row.append(None)
-                else:
-                    row.append(val)
-
-                if(name == "User"):
+            values_list = []
+            for row in reader:
+                if(name == "users"):
                     u += 1
-                elif(name == "Machine"):
+                elif(name == "machines"):
                     m += 1
-                elif(name == "Course"):
+                elif(name == "courses"):
                     c += 1
 
-                cursor.execute(insert, temp)
+                values_list.append("(" + ",".join([get_formatted_param(item) for item in row]) + ")")
 
-                for row in reader:
-                    temp = []
-                    for val in row:
-                        if(val == 'NULL'):
-                            temp.append(None)
-                        else:
-                            temp.append(val)
+            cursor.execute(f"INSERT INTO {name} VALUES {','.join(values_list)};")
 
-
-                    if(name == "User"):
-                        u += 1
-                    elif(name == "Machine"):
-                        m += 1
-                    elif(name == "Course"):
-                        c += 1
-
-                    cursor.execute(insert, temp)
-
-        cursor.close()
-
-        print("{}, {}, {}".format(u, m, c))
+    db_connection.commit()
+    print(f"{u},{m},{c}")
 
 def insert_student(uci_net_id: str, email: str, First: str, Middle: str, Last: str) -> None:
     try:
