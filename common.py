@@ -3,9 +3,9 @@ import os
 import csv
 
 class Constants:
-    USER = "root"
+    USER = "test"
 
-    PASSWORD = "Y9shk*qG"
+    PASSWORD = "password"
 
     DATABASE = "cs122a"
 
