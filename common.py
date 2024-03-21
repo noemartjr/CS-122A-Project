@@ -1,10 +1,11 @@
 import mysql.connector
-
+import os
+import csv
 
 class Constants:
-    USER = "test"
+    USER = "root"
 
-    PASSWORD = "password"
+    PASSWORD = "Y9shk*qG"
 
     DATABASE = "cs122a"
 
@@ -210,6 +211,27 @@ def emails_of_admin( machine_id: int) -> None:
                             JOIN adminManageMachines AMM ON A.UCINetID = AMM.AdminUCINetID \
                             WHERE AMM.MachineID = \'{machine_id}\' \
                             ORDER BY U.UCINetID ASC;")
+    print_table(cursor)
+
+def activeStudent(machine_id: int, numTimes: int, startDate: str, endDate: str) -> None:
+    cursor.execute(f"SELECT * FROM users U \
+                     JOIN studentUse SU ON U.UCINetID = SU.UCINetID \
+                     WHERE SU.MachineID = {machine_id} AND \
+                     SU.startDate >= '{startDate}' AND SU.EndDate <= '{endDate}' \
+                     GROUP BY U.UCINetID, U.FirstName, U.MiddleName, U.LastName \
+                     HAVING COUNT(*) >= {numTimes} \
+                     ORDER BY U.UCINetID ASC;")
+    print_table(cursor)
+    
+def machineUsage(courseId: int) -> None:
+    cursor.execute(f"SELECT M.MachineID, M.Hostname, M.IPAddress, M.OperationalStatus, \
+                     SUM(CASE WHEN SU.ProjectID IS NOT NULL THEN 1 ELSE 0 END) AS Count \
+                     FROM machines M \
+                     LEFT JOIN (SELECT * FROM studentUse WHERE ProjectID IN( \
+                                SELECT ProjectID from Project WHERE CourseID = {courseId})) \
+                     AS SU ON SU.MachineID = M.MachineID \
+                     GROUP BY M.MachineID, M.Hostname, M.IPAddress \
+                     ORDER BY M.MachineID DESC;")
     print_table(cursor)
 
 def print_table(cursor):

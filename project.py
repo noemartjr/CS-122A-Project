@@ -13,8 +13,8 @@ FUNC_MAP = {
     "listCourse": course_attended,
     "popularCourse": popular_course,
     "adminEmails": emails_of_admin,
-    "activeStudent": lambda *args, **kwargs: print(f"Missing activeStudent function"),
-    "machineUsage": lambda *args, **kwargs: print(f"Missing machineUsage function")
+    "activeStudent": activeStudent,
+    "machineUsage": machineUsage
 }
 
 if __name__ == "__main__":
