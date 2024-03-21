@@ -214,7 +214,7 @@ def emails_of_admin(machine_id: int) -> None:
 def activeStudent(machine_id: int, numTimes: int, startDate: str, endDate: str) -> None:
     try:
         cursor.execute(f"SELECT U.UCINetID, U.FirstName, U.MiddleName, U.LastName FROM users U \
-                         JOIN studentUse SU ON U.UCINetID = SU.UCINetID \
+                         JOIN studentUse SU ON U.UCINetID = SU.StudentUCINetID \
                          WHERE SU.MachineID = {machine_id} AND \
                          SU.startDate >= {startDate} AND SU.EndDate <= {endDate} \
                          GROUP BY U.UCINetID, U.FirstName, U.MiddleName, U.LastName \
