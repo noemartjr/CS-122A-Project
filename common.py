@@ -2,12 +2,14 @@ import mysql.connector
 import os
 import csv
 
+
 class Constants:
     USER = "test"
 
     PASSWORD = "password"
 
     DATABASE = "cs122a"
+
 
 try:
     db_connection = mysql.connector.connect(user=Constants.USER, password=Constants.PASSWORD,
@@ -18,208 +20,70 @@ except mysql.connector.Error as error:
     print(f"Failed to execute SQL script: {error}")
     exit(-1)
 
-
 # will add functions to be used
-schema = {
-    'users': '''
-        CREATE TABLE IF NOT EXISTS users(
-            UCINetID VARCHAR(20) PRIMARY KEY NOT NULL,
-            FirstName VARCHAR(50),
-            MiddleName VARCHAR(50),
-            LastName VARCHAR(50)
-        )
-    ''',
 
-    'machines':'''
-        CREATE TABLE IF NOT EXISTS machines(
-            MachineID INT PRIMARY KEY NOT NULL,
-            Hostname VARCHAR(255),
-            IPAddress VARCHAR(15),
-            OperationalStatus VARCHAR(50),
-            Location VARCHAR(255)
-        )
-    ''',
-    'courses':'''
-        CREATE TABLE IF NOT EXISTS courses(
-            CourseID INT PRIMARY KEY NOT NULL,
-            Title VARCHAR(100),
-            Quarter VARCHAR(20)
-        )
-    ''',
-
-    'emails':'''
-        CREATE TABLE IF NOT EXISTS email (
-            UCINetID VARCHAR(20) NOT NULL,
-            Email VARCHAR(100),
-            PRIMARY KEY (UCINetID, Email),
-            FOREIGN KEY (UCINetID) REFERENCES users (UCINetID)
-            ON DELETE CASCADE
-        )
-    ''',
-
-    'students':'''
-        CREATE TABLE IF NOT EXISTS students (
-           UCINetID VARCHAR(20) PRIMARY KEY NOT NULL,
-           FOREIGN KEY (UCINetID) REFERENCES users(UCINetID)
-             ON DELETE CASCADE
-        )
-    ''',
-
-    'admins':'''
-        CREATE TABLE IF NOT EXISTS administrators (
-           UCINetID VARCHAR(20) PRIMARY KEY NOT NULL,
-           FOREIGN KEY (UCINetID) REFERENCES users(UCINetID)
-             ON DELETE CASCADE
-        )
-    ''',
-
-    'projects':'''
-        CREATE TABLE IF NOT EXISTS projects (
-           ProjectID INT PRIMARY KEY NOT NULL,
-           Name VARCHAR(100),
-           Description TEXT,
-           CourseID INT NOT NULL,
-           FOREIGN KEY (CourseID) REFERENCES courses(CourseID)
-        )
-    ''',
-
-    'use':'''
-        CREATE TABLE IF NOT EXISTS use (
-           ProjectID INT,
-           StudentUCINetID VARCHAR(20),
-           MachineID INT,
-           StartDate DATE,
-           EndDate DATE,
-           PRIMARY KEY (ProjectID, StudentUCINetID, MachineID),
-           FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID),
-           FOREIGN KEY (StudentUCINetID) REFERENCES students(UCINetID),
-           FOREIGN KEY (MachineID) REFERENCES machines(MachineID)
-        )
-    ''',
-
-    'manage':'''
-        CREATE TABLE IF NOT EXISTS manage (
-           AdminUCINetID VARCHAR(20),
-           MachineID INT,
-           PRIMARY KEY (AdminUCINetID, MachineID),
-           FOREIGN KEY (AdminUCINetID) REFERENCES administrators(UCINetID),
-           FOREIGN KEY (MachineID) REFERENCES machines(MachineID)
-        )
-    ''',
-}
-
-def import_data(fpath):
-    u = 0;
-    m = 0;
-    c = 0;
-    a = 0;
-    e = 0;
-    p = 0;
-    s = 0;
-    use = 0;
-    man = 0;
-
-    drop = "DROP TABLE IF EXISTS {}"
-    insert = "INSERT INTO {table} ()"
-
-    cursor.execute("SET FOREIGN_KEY_CHECKS = 0")
-    cursor.execute("SHOW TABLES")
-
-    for t in cursor.fetchall():
-        name = t[0]
-
-    cursor.execute(drop.format(name))
-    cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
+sql_file_path = 'cs122a_project.sql'
 
 
-    TABLES = schema()
+def get_formatted_param(param: str) -> str:
+    if param == "NULL":
+        return "NULL"
+    elif param.isdigit():
+        return param
+    else:
+        return f"'{param}'"
 
-    for name in TABLES:
-        desc = TABLES[name]
-        cursor.execute(desc)
 
+def import_data(fpath: str) -> None:
+    try:
+        fpath = fpath.strip("\'")
+        u = 0
+        m = 0
+        c = 0
 
-    tnames = [('users', 'User'),
-             ('emails', 'email'),
-             ('admins', 'Administrator'),
-             ('students', 'Student'),
-             ('machines', 'Machine'),
-             ('courses', 'Course'),
-             ('projects', 'Project'),
-             ('manage', 'Manage'),
-             ('use', 'Uses')]
+        sql_script = open(sql_file_path, 'r').read()
+        # Execute each statement in the SQL file
+        for statement in sql_script.split(';'):
+            # Ignore empty statements (which can occur due to splitting by ';')
+            if statement.strip():
+                cursor.execute(statement)
 
-    for filename, name in tnames:
-        path = os.path.join(fpath, filename + '.csv')
+        db_connection.commit()
 
-        with open(path, newline='') as csvfile:
-            reader = csv.reader(csvfile)
-            first = next(reader)
-            col = len(first)
+        # (file name, table name)
+        tnames = [('users', 'users'),
+                  ('emails', 'userEmail'),
+                  ('admins', 'administrators'),
+                  ('students', 'students'),
+                  ('machines', 'machines'),
+                  ('courses', 'courses'),
+                  ('projects', 'projects'),
+                  ('manage', 'adminManageMachines'),
+                  ('use', 'studentUse')]
 
-            insert = format(name, col)
-            temp = []
+        for filename, name in tnames:
+            path = os.path.join(fpath, filename + '.csv')
 
-            for val in first:
-                if(val == 'NULL'):
-                    row.append(None)
-                else:
-                    row.append(val)
-
-                if(name == "User"):
-                    u += 1
-                elif(name == "Machine"):
-                    m += 1
-                elif(name == "Course"):
-                    c += 1
-                elif(name == "Administrator"):
-                    a += 1
-                elif(name == "email"):
-                    e += 1
-                elif(name == "Project"):
-                    p += 1
-                elif(name == "Student"):
-                    s += 1
-                elif(name == "Uses"):
-                    use += 1;
-                elif(name == "Manage"):
-                    man += 1
-
-                cursor.execute(insert, temp)
-
+            with open(path, 'r') as csvfile:
+                reader = csv.reader(csvfile)
+                values_list = []
                 for row in reader:
-                    temp = []
-                    for val in row:
-                        if(val == 'NULL'):
-                            temp.append(None)
-                        else:
-                            temp.append(val)
-
-
-                    if(name == "User"):
+                    if (name == "users"):
                         u += 1
-                    elif(name == "Machine"):
+                    elif (name == "machines"):
                         m += 1
-                    elif(name == "Course"):
+                    elif (name == "courses"):
                         c += 1
-                    elif(name == "Administrator"):
-                        a += 1
-                    elif(name == "email"):
-                        e += 1
-                    elif(name == "Project"):
-                        p += 1
-                    elif(name == "Student"):
-                        s += 1
-                    elif(name == "Uses"):
-                        use += 1;
-                    elif(name == "Manage"):
-                        man += 1
 
-                    cursor.execute(insert, temp)
+                    values_list.append("(" + ",".join([get_formatted_param(item) for item in row]) + ")")
 
-        cursor.close()
+                cursor.execute(f"INSERT INTO {name} VALUES {','.join(values_list)};")
 
-        print("{}, {}, {}, {}, {}, {}, {}, {}, {}".format(u, m, c, a, e, p, s, use, man))
+        db_connection.commit()
+        print(f"{u},{m},{c}")
+    except mysql.connector.Error as error:
+        pass
+
 
 def insert_student(uci_net_id: str, email: str, First: str, Middle: str, Last: str) -> None:
     try:
@@ -250,6 +114,7 @@ def add_email(UCINetID, email):
     except mysql.connector.Error as e:
         print("Fail")
 
+
 def delete_student(uci_net_id: str) -> None:
     try:
         cursor.execute(f"DELETE FROM users WHERE UCINetID = {uci_net_id};")
@@ -279,6 +144,7 @@ def insert_use_record(*remainder_args) -> None:
     except mysql.connector.Error as error:
         print("Fail")
 
+
 def update_course(course_id: int, title: str) -> None:
     try:
         query = ("UPDATE courses \
@@ -291,6 +157,7 @@ def update_course(course_id: int, title: str) -> None:
         print("Success")
     except mysql.connector.Error as error:
         print(f"Fail")
+
 
 def course_attended(uci_net_id: str) -> None:
     try:
@@ -305,6 +172,7 @@ def course_attended(uci_net_id: str) -> None:
     except mysql.connector.Error as error:
         pass
 
+
 def popular_course(N: int) -> None:
     try:
         cursor.execute(f"SELECT c.CourseID, c.Title, COUNT(*) AS studentCount \
@@ -318,7 +186,8 @@ def popular_course(N: int) -> None:
     except mysql.connector.Error as error:
         pass
 
-def emails_of_admin( machine_id: int) -> None:
+
+def emails_of_admin(machine_id: int) -> None:
     try:
         cursor.execute(f"SELECT U.UCINetID, U.FirstName, U.MiddleName, U.LastName, UE.Email \
                                 FROM administrators A \
@@ -330,6 +199,7 @@ def emails_of_admin( machine_id: int) -> None:
         print_table()
     except mysql.connector.Error as error:
         pass
+
 
 def activeStudent(machine_id: int, numTimes: int, startDate: str, endDate: str) -> None:
     try:
@@ -343,7 +213,8 @@ def activeStudent(machine_id: int, numTimes: int, startDate: str, endDate: str) 
         print_table()
     except mysql.connector.Error as error:
         pass
-    
+
+
 def machineUsage(courseId: int) -> None:
     try:
         cursor.execute(f"SELECT M.MachineID, M.Hostname, M.IPAddress, \
@@ -358,9 +229,9 @@ def machineUsage(courseId: int) -> None:
     except mysql.connector.Error as error:
         pass
 
+
 def print_table():
     rows = cursor.fetchall()
     if rows:
         for row in rows:
             print(",".join(str(cell) for cell in row))
-
